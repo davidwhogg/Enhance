@@ -1,0 +1,88 @@
+\documentclass[12pt]{article}
+
+\newcommand{\company}[1]{\textsl{#1}}
+\newcommand{\An}{\company{Astrometry.net}}
+\newcommand{\flickr}{\company{flickr}}
+\newcommand{\foreign}[1]{\textit{#1}}
+
+\begin{document}
+
+\section{Introduction}
+
+There are enormous numbers of images available on the Web; estimates
+are in the trillions.  Our experience with \An\ and \flickr\ suggests
+that there might be as many as $10^5$ images on the Web that contain
+information about the night sky.  Some of these images are night-time
+snapshots, some are carefully rendered visualizations of observing
+programs from tracking backyard telescopes.  Either way, these images
+are difficult to use for scientific purposes because they have unknown
+provenance and images rendered for human visual consumption are often
+processed with non-trivial non-linear (and sometimes non-local)
+transformations.  Furthermore, we know nothing (\foreign{a priori})
+about the point-spread function or vignetting or flat-field or
+pixel-to-pixel noise or optical distortions.
+
+Nonetheless, it remains a holy grail of the global \An\ team to scrape
+the Web for these images and learn everything about the night sky that
+can be learned from them; in principle these images may contain a huge
+amount of information about rare transients, variable stars, and high
+proper-motion objects.  One example of a successful exploitation of
+imaging of unknown provenance and processing is our previous
+determination of the gravitational orbit of Comet P/?? Holmes using
+imaging found by Web search (HOGG CITE).  An interesting new
+direction---explored here---is to look at extended objects at faint
+isophotal levels.  The surface-brightness (intensity) sensitivity of a
+telescope is not a strong function of its aperture; the combined
+imaging from many small-telescope observations might contain a lot of
+information faint emission.  Indeed, many of the faintest features
+known in nearby galaxies were found with telescopes with small
+apertures (HOGG CITE).
+
+The key problem we face is extraction of scientifically valuable
+information from the images without detailed knowledge of image
+provenance or processing.
+
+\section{Method}
+
+Briefly, the algorithm is as follows:
+\begin{enumerate}
+\item Scrape the web, calibrate images.  Discard images that do not
+  calibrate successfully or which do not have footprints that overlap
+  the sky region of interest.
+\item Resample / interpolate images onto a common WCS or pixel grid.
+  The output of this is, for every input image, a set of interpolated
+  pixel values on the common WCS grid and a mask image, with non-zero
+  values in the pixels in which the input image overlaps the WCS.
+\item Choose one interpolated image as the ``reference image'',
+  preferably one that fills or nearly fills the grid and shows good
+  dynamic range.
+\item Initialize a ``numerator'' image with the reference image, and
+  initialize a ``denominator image'' with unity where the reference
+  image hits the common pixel grid, and zero where it doesn't.
+\item Begin loop over all input images (except the reference image).
+  Alternatively the loop could be over \emph{patches} of the input
+  images, if there are concerns about non-local or non-stationary
+  processing or vignetting.  For each input image or patch:
+\item Create the reference-image and input-image pixel histograms, but
+  using only the pixels in which the input image has non-zero mask or
+  weight values.  In fact, if the weights are non-trivial, make the
+  properly weighted histograms from each.
+\item Find the \emph{monotonic} but probably non-linear transformation
+  (from some family of transformations) that matches the two
+  histograms.
+\item Increment the denominator image by the weight image.  Increment
+  the numerator image by the input image, transformed to match the
+  reference-image histogram, pixelwise-multiplied by the weight image.
+\item End loop
+\item Divide numerator image by denominator image.  Ship!
+\end{enumerate}
+
+issues:
+\begin{itemize}
+\item How to build weight / mask?  Probably should mask out saturated
+  or text areas.
+\item How to parameterize or optimize the histogram-matching function?
+\end{itemize}
+
+
+\end{document}
