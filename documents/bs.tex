@@ -44,6 +44,36 @@ provenance or processing.
 
 \section{Method}
 
+We have $N$ images $n$.  Each image $n$ contains pixel values $d_n$,
+where $d_n$ can be thought of as a vector as long as the number of
+pixels in the image.  The intensity field $I$ (energy per time per
+solid angle per logarithmic wavelength interval) generates the data
+$d_n$ only after convolution with the appropriate point-spread
+function, transformation to the relevant pixel grid, and sampling.  We
+represent this transformation---convolution, coordinate
+transformation, and sampling, all of which are linear operations---as
+a linear operator $H_n$ acting on the intensity field).  The linearly
+transformed intensity field $H_n\cdot I$ is transformed non-linearly
+through a monotonic function $f_n(\cdot)$ to ``data values'' and noise
+$e_n$ is added to make the data:
+\begin{eqnarray}
+d_n &=& f_n(H_n\cdot I) + e_n
+\end{eqnarray}
+In reality, the noise is probably not precisely additive, but this
+approximation is useful methodologically, and appropriate when the
+noise is nearly Gaussian and the function $f_n(\cdot)$ is nearly
+linear, as may be the case for the faint components of images, which
+are of greatest interest to this project.
+
+Ideally, we would like to infer the intensity field $I$ given a
+collection of images $d_n$.  However, since no image provides
+independent information about $f_n$ and $I$, and we are unwilling to
+put extremely strong priors on either of these components, we will
+attempt to infer not $I$ directly but a transformed version
+$f_0(H_0\cdot I)$, where $H_0$ is a fiducial linear operator, and
+$f_0(\cdot)$ is a fiducial non-linear transformation, both unknown but
+appropriate for one fiducial image ($n=0$) in the set of images.
+
 Briefly, the algorithm is as follows:
 \begin{enumerate}
 \item Scrape the web, calibrate images.  Discard images that do not
